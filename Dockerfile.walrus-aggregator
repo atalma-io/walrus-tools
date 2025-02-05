@@ -1,0 +1,36 @@
+FROM ubuntu:latest
+
+RUN groupadd -g 1001 walrus && \
+    useradd -u 1001 -g walrus walrus
+
+RUN apt update && apt install curl -y    
+
+# Create directories and set permissions as root
+RUN mkdir -p /opt/walrus/bin/ && \
+    mkdir -p /opt/walrus/config && \
+    chown -R walrus:walrus /opt/walrus
+
+USER walrus
+
+ENV RUST_BACKTRACE=1
+ENV RUST_LOG=info
+
+WORKDIR /opt/walrus/bin
+
+RUN curl -L https://storage.googleapis.com/mysten-walrus-binaries/walrus-testnet-latest-ubuntu-x86_64 -o walrus
+RUN chmod 0755 walrus
+
+WORKDIR /opt/walrus/config
+RUN curl -L https://raw.githubusercontent.com/MystenLabs/walrus-docs/refs/heads/main/docs/client_config.yaml -o /opt/walrus/config/client_config.yaml
+
+WORKDIR /opt/walrus/bin
+
+CMD ["/opt/walrus/bin/walrus", \
+    "--config-path", "/opt/walrus/config/client_config.yaml", \
+    "aggregator", \
+    "--bind-address", "0.0.0.0:9000", \
+    "--metrics-address", "0.0.0.0:27182", \
+    "--metrics-port", "27182" ]
+
+EXPOSE 9000
+EXPOSE 27182
