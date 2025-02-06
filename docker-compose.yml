@@ -113,6 +113,34 @@ services:
         max-size: "1024m"
         max-file: 1
 
+  walrus-aggregator:
+    build:
+      context: .
+      dockerfile: Dockerfile.walrus-aggregator
+      network: host
+    network_mode: "host"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4      
+    volumes:
+      - /opt/walrus-aggregator:/opt/walrus
+    container_name: walrus-aggregator
+    restart: unless-stopped
+    environment:
+      VIRTUAL_PORT: 9000
+      VIRTUAL_HOST: aggregator.testnet.walrus.atalma.io
+      LETSENCRYPT_HOST: aggregator.testnet.walrus.atalma.io
+      LETSENCRYPT_EMAIL: aaron@atalma.io
+      LETSENCRYPT_SINGLE_DOMAIN_CERTS: true
+    ports:
+      - "9000:9000"
+      - "27182:27182"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1024m"
+        max-file: 1            
+
 volumes:
   prometheus:
     driver: local
