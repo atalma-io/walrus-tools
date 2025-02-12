@@ -10,7 +10,10 @@ services:
       - /var/run/docker.sock:/tmp/docker.sock:ro
       - certs:/etc/nginx/certs
       - vhost-d:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html  
+      - html:/usr/share/nginx/html
+      - /cache:/var/cache/nginx
+    environment:
+      - NGINX_PROXY_CACHE_PATH=/var/cache/nginx levels=1:2 keys_zone=agg_cache:20m max_size=16g inactive=1h use_temp_path=off
     logging:
       driver: "json-file"
       options:
@@ -132,6 +135,10 @@ services:
       LETSENCRYPT_HOST: aggregator.testnet.walrus.atalma.io
       LETSENCRYPT_EMAIL: aaron@atalma.io
       LETSENCRYPT_SINGLE_DOMAIN_CERTS: true
+      VIRTUAL_HOST_CACHE: "true"
+      VIRTUAL_HOST_CACHE_DURATION: "60m"
+      VIRTUAL_HOST_CACHE_VALID: "200 10m 302 10m 404 1m"
+      VIRTUAL_HOST_CACHE_USE_STALE: "error timeout invalid_header updating http_500 http_502 http_503 http_504"
     ports:
       - "9000:9000"
       - "27182:27182"
