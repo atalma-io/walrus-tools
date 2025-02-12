@@ -1,0 +1,33 @@
+FROM ubuntu:latest
+
+RUN groupadd -g 1001 walrus && \
+    useradd -u 1001 -g walrus walrus
+
+RUN apt update && apt install -y \
+    ca-certificates \
+    build-essential \
+    curl \
+    wget \
+    gnupg \
+    software-properties-common    
+
+ENV RUST_BACKTRACE=1
+ENV RUST_LOG=info
+
+COPY ./publisher_entrypoint.sh /usr/local/bin/publisher_entrypoint.sh
+RUN chmod +x /usr/local/bin/publisher_entrypoint.sh
+RUN chown walrus:walrus /usr/local/bin/publisher_entrypoint.sh
+
+USER walrus
+
+ENTRYPOINT ["/usr/local/bin/publisher_entrypoint.sh"]
+CMD ["/opt/walrus/bin/walrus", \
+    "--config", "/opt/walrus/config/client_config.yaml", \
+    "publisher", \
+    "--bind-address", "0.0.0.0:9001", \
+    "--metrics-address", "0.0.0.0:27183", \
+    "--sub-wallets-dir", "/opt/walrus/wallets"]
+
+EXPOSE 9001
+EXPOSE 27183
+

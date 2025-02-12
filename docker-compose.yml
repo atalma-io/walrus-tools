@@ -123,7 +123,7 @@ services:
       - 8.8.8.8
       - 8.8.4.4      
     volumes:
-      - /opt/walrus-aggregator:/opt/walrus
+      - /opt/walrus-aggregator-publisher:/opt/walrus
     container_name: walrus-aggregator
     restart: unless-stopped
     environment:
@@ -139,7 +139,35 @@ services:
       driver: "json-file"
       options:
         max-size: "1024m"
-        max-file: 1            
+        max-file: 1    
+
+  walrus-publisher:
+    build:
+      context: .
+      dockerfile: Dockerfile.walrus-publisher
+      network: host
+    network_mode: "host"
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4      
+    volumes:
+      - /opt/walrus-aggregator-publisher:/opt/walrus
+    container_name: walrus-publisher
+    restart: unless-stopped
+    environment:
+      VIRTUAL_PORT: 9001
+      VIRTUAL_HOST: publisher.testnet.walrus.atalma.io
+      LETSENCRYPT_HOST: publisher.testnet.walrus.atalma.io
+      LETSENCRYPT_EMAIL: aaron@atalma.io
+      LETSENCRYPT_SINGLE_DOMAIN_CERTS: true
+    ports:
+      - "9001:9001"
+      - "27183:27183"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1024m"
+        max-file: 1                    
 
 volumes:
   prometheus:
@@ -156,3 +184,4 @@ networks:
     driver: bridge
   internal:
     driver: bridge            
+
